@@ -94,6 +94,6 @@ router.get("/webapi/learn/show", async (ctx) => {
 // 装载所有路由
 app.use(router.routes()).use(router.allowedMethods());
 
-app.use(serve('../static'));
+app.use(serve(__dirname + '/../static'));
 
 app.listen(3000, () => { console.log("Koa is running") });
