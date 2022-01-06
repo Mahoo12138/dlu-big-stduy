@@ -1,7 +1,7 @@
 const Koa = require('koa');
 const fs = require('fs')
 const axios = require('axios');
-const puppeteer = require('puppeteer')
+const shelljs = require('shelljs')
 const serve = require('koa-static')
 const Router = require('koa-router')
 
@@ -67,25 +67,16 @@ router.get("/webapi/learn/addlearnlog", async (ctx) => {
 })
 
 router.get("/webapi/learn/show", async (ctx) => {
-  const { query } = ctx
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
 
-  await page.goto('http://127.0.0.1:3000/');
-  page.setViewport({
-    width: 375,
-    height: 667,
-    isMobile: true
-  })
+  shelljs.exec(`termux-notification -i 7 -t '青年大学习' -c '最新一期' --button1 '按钮'`)
+  shelljs.exec(`mv /sdcard/Pictures/pic.png /data/data/com.termux/files/home/big-study/static/img/pic.png`)
 
-  setTimeout(async () => {
-    await page.screenshot({ path: `../static/img/${query.id || 0}.png` });
-  }, 2000)
 
-  let data = fs.readFileSync(`../static/img/${query.id || 0}.png`);
+  let data = fs.readFileSync(__dirname + '/../static/img/pic.png');
   data = Buffer.from(data).toString('base64');
   ctx.body = {
-    img: data
+    img: data,
+    log: "通知已显示"
   }
 })
 
