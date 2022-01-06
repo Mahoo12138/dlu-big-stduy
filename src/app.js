@@ -1,5 +1,7 @@
 const Koa = require('koa');
+const fs = require('fs')
 const axios = require('axios');
+const puppeteer = require('puppeteer')
 const serve = require('koa-static')
 const Router = require('koa-router')
 
@@ -31,7 +33,7 @@ router.post("/webapi/learn/learnlog", async (ctx) => {
   let res = await axios.post(url + '/webapi/learn/learnlog', {
     'page[page]': 1
   }, { headers })
-  console.log(res)
+  // console.log(res)
   ctx.body = res.data
 })
 
@@ -41,24 +43,53 @@ router.post("/user/user/find", async (ctx) => {
   let res = await axios.post(url + '/user/user/find', {
     "token": ""
   }, { headers })
-  console.log(res)
+  // console.log(res)
   ctx.body = res.data
 })
 
 
-router.post("/webapi/learn/addlearnlog", async (ctx) => {
-  let res1 = await axios.post(url + '/webapi/learn/getnowlearn', {
+router.get("/webapi/learn/addlearnlog", async (ctx) => {
+  let { data } = await axios.post(url + '/webapi/learn/getnowlearn', {
     "token": ""
   }, { headers })
-  let now = res1.data.id
-
+  let now = data.data.id
   let res2 = await axios.post(url + '/webapi/learn/addlearnlog', {
     "token": "",
     "lid": now
   }, { headers })
-  console.log(res2)
-  ctx.body = res2.data
+  // console.log(res2)
+  ctx.body = {
+    result: 0,
+    data: {
+      id: now
+    }
+  }
 })
+
+router.get("/webapi/learn/show", async (ctx) => {
+  const { query } = ctx
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+
+  await page.goto('http://127.0.0.1:3000/');
+  page.setViewport({
+    width: 375,
+    height: 667,
+    isMobile: true
+  })
+
+  setTimeout(async () => {
+    await page.screenshot({ path: `../static/img/${query.id || 0}.png` });
+  }, 2000)
+
+  let data = fs.readFileSync(`../static/img/${query.id || 0}.png`);
+  data = Buffer.from(data).toString('base64');
+  ctx.body = {
+    img: data
+  }
+})
+
+
 
 // 装载所有路由
 app.use(router.routes()).use(router.allowedMethods());
